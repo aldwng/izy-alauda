@@ -1,5 +1,3 @@
-import torch
-from deepctr_torch.models.deepfm import DeepFM
-
-x = torch.rand(5, 3)
-print(x)
+# import tensorflow as tf
+# from tensorflow import keras
+# from keras import layers
