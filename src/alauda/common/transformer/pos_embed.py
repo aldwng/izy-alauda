@@ -13,8 +13,8 @@ class PosEmbedding(layers.Layer):
         self.out_dim = out_dim
 
     def call(self, inputs):
-        len = tf.shape(inputs)[-1]
-        pos = tf.range(start=0, limit=len, delta=1)
+        len_ = tf.shape(inputs)[-1]
+        pos = tf.range(start=0, limit=len_, delta=1)
         embed_terms = self.term_embed(inputs)
         embed_pos = self.pos_embed(pos)
         return embed_terms + embed_pos

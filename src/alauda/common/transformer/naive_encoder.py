@@ -24,7 +24,7 @@ class NaiveTransformerEncoder(layers.Layer):
 
         attention_out = self.attention_block(inputs,
                                              inputs,
-                                             attention_mask=mask,
+                                             attention_mask=mask
                                              )
         dense_block_in = self.layer_norm_1(inputs + attention_out)
         dense_block_out = self.dense_block(dense_block_in)
