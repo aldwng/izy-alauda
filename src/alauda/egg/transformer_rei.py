@@ -1,25 +1,34 @@
+import random
+
 import tensorflow as tf
 from keras import layers
 from tensorflow import keras
+from keras.optimizers import RMSprop
+from keras.activations import relu
+import numpy as np
 import time
 
 __author__ = "Aldy"
 
 """ Here are hyper params. """
 
-prep_train = 'C:/Dev/ds/wp_prep_1_train.txt'
-prep_valid = 'C:/Dev/ds/wp_prep_1_valid.txt'
-prep_test = 'C:/Dev/ds/wp_prep_1_test.txt'
+prep_train = 'C:/Dev/ds/wp_prep_01_train.txt'
+prep_valid = 'C:/Dev/ds/wp_prep_01_valid.txt'
+prep_test = 'C:/Dev/ds/wp_prep_01_test.txt'
 
-vocab_size = 7500
-seq_len = 50
+vocab_size = 15000
+seq_len = 32
 
-embed_dim = 128
-dense_dim = 32
+embed_dim = 64
+dense_dim = 512
 multi_head_num = 2
 
-conf_epoch = 5
-batch_size = 128
+conf_epoch = 3
+conf_batch_size = 64
+conf_dropout = 0.2
+conf_lr = 0.01
+conf_optimizer = RMSprop(learning_rate=conf_lr)
+conf_activation = relu
 
 """ Here are layers. """
 
@@ -237,7 +246,7 @@ def get_as_dataset(pairs):
     src_text = list(src_text)
     tar_text = list(tar_text)
     dataset = tf.data.Dataset.from_tensor_slices((src_text, tar_text))
-    dataset = dataset.batch(batch_size)
+    dataset = dataset.batch(conf_batch_size)
     dataset = dataset.map(format_dataset, num_parallel_calls=2)
     return dataset.shuffle(2048).prefetch(16).cache()
 
@@ -264,21 +273,49 @@ print(encoder_out.shape)
 decoder_in = keras.Input(shape=(None,), dtype="int64", name='target')
 forward = PosEmbedding(seq_len, vocab_size, embed_dim)(decoder_in)
 forward = TDecoder(embed_dim, dense_dim, multi_head_num)(forward, encoder_out)
-forward = layers.Dropout(0.5)(forward)
+forward = layers.Dropout(conf_dropout)(forward)
 decoder_out = layers.Dense(vocab_size, activation="softmax")(forward)
 
 print("cost(.seven) is " + str(time.time() - start_time))
 start_time = time.time()
 
-n_tsfm = keras.Model([encoder_in, decoder_in], decoder_out)
-n_tsfm.compile(optimizer="rmsprop",
-               loss="sparse_categorical_crossentropy",
-               metrics=["accuracy"])
+tsfm = keras.Model([encoder_in, decoder_in], decoder_out)
+tsfm.compile(optimizer=conf_optimizer,
+             loss="sparse_categorical_crossentropy",
+             metrics=["accuracy"])
 
 print("cost(.eight) is " + str(time.time() - start_time))
 start_time = time.time()
 
-n_tsfm.fit(train_dataset, epochs=conf_epoch, validation_data=valid_dataset)
+tsfm.fit(train_dataset, epochs=conf_epoch, validation_data=valid_dataset)
 
 print("cost(.nine) is " + str(time.time() - start_time))
 start_time = time.time()
+
+target_vocab = tar_vectorization.get_vocabulary()
+target_index = dict(zip(range(len(target_vocab)), target_vocab))
+max_target_seq_len = seq_len
+
+
+def decode_seq(input_seq):
+    tokenized_src = src_vectorization([input_seq])
+    decoded_seq = '[SOS]'
+    for i in range(max_target_seq_len):
+        tokenized_tar = tar_vectorization([decoded_seq])[:, :-1]
+        pred = tsfm([tokenized_src, tokenized_tar])
+        sampled_token_index = np.argmax(pred[0, i, :])
+        sampled_token = target_index[sampled_token_index]
+        decoded_seq += ' ' + sampled_token
+        if sampled_token == '[EOS]':
+            break
+    return decoded_seq
+
+
+for _ in range(20):
+    test_pair = random.choice(pairs_test)
+    test_in = test_pair[0]
+    test_out = test_pair[1]
+    print('---')
+    print('test_in: ' + test_in)
+    print('test out: ' + test_out)
+    print('test pred: ' + decode_seq(test_in))
