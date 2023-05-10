@@ -28,14 +28,10 @@ def clean_sentence(s):
     return ns
 
 
-def sample(sentence, w_size):
+def sample(sentence):
     terms = sentence.split()
-    if len(terms) <= w_size + 1:
-        return ''
-    w_terms = terms[0: w_size]
-    window = ' '.join(w_terms)
 
-    return window + '\t' + ' '.join(terms[w_size:])
+    return ' '.join(terms[0:-1]) + '\t' + ' '.join(terms[1:])
 
 
 with open(corpora_in, encoding='UTF-8') as f:
@@ -54,7 +50,7 @@ for i in range(len(lines)):
 
 seqs = []
 for line in lines:
-    seq = sample(line, window_size_fix)
+    seq = sample(line)
     if seq is not None and seq != '':
         seqs.append(seq)
 
