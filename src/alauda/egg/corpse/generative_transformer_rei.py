@@ -13,17 +13,18 @@ __author__ = "Aldy"
 """ Here are hyper params. """
 
 text_file_dir = 'C:/Dev/ds/war_peace/'
-text_file = 'C:/Dev/ds/war_peace/wp_prep_d_01.txt'
+# text_file = 'C:/Dev/ds/war_peace/wp_prep_d_01.txt'
+text_file = 'C:/Dev/ds/lyrics/eng_lyrics_00.txt'
 
-vocab_size = 15000
-seq_len = 49
+vocab_size = 12000
+seq_len = 50
 
 embed_dim = 64
 dense_dim = 128
 multi_head_num = 4
 
 conf_epoch = 20
-conf_batch_size = 64
+conf_batch_size = 32
 conf_lr = 0.01
 conf_optimizer = RMSprop()
 conf_activation = relu
@@ -182,7 +183,7 @@ start_time = time.time()
 gt_model = keras.Model(inputs, outputs)
 gt_model.compile(optimizer=conf_optimizer,
                  loss="sparse_categorical_crossentropy",
-                 metrics=["accuracy", ])
+                 )
 
 print("cost(.02) is " + str(time.time() - start_time))
 start_time = time.time()
@@ -271,14 +272,14 @@ class TextGenerator(callbacks.Callback):
             print(sentence)
 
 
-prompt = "we should"
+prompt = "gold chain"
 
 text_gen_callback = TextGenerator(
     prompt,
     gen_len=30,
     model_input_len=seq_len,
     temperatures=(0.1, 0.3, 0.5, 0.7, 1.,),
-    print_freq=2,
+    print_freq=1,
 )
 
 print("cost(.03) is " + str(time.time() - start_time))
