@@ -12,18 +12,18 @@ __author__ = "Aldy"
 
 """ Here are hyper params. """
 
-text_file = 'C:/Dev/ds/war_peace/'
+text_file_dir = 'C:/Dev/ds/war_peace/'
+text_file = 'C:/Dev/ds/war_peace/wp_prep_d_01.txt'
 
-vocab_size = 17000
-seq_len = 100
+vocab_size = 15000
+seq_len = 49
 
-embed_dim = 128
-dense_dim = 256
+embed_dim = 64
+dense_dim = 128
 multi_head_num = 4
 
-conf_epoch = 200
+conf_epoch = 20
 conf_batch_size = 64
-conf_dropout = 0.2
 conf_lr = 0.01
 conf_optimizer = RMSprop()
 conf_activation = relu
@@ -165,27 +165,50 @@ class TDecoder(layers.Layer):
 
 start_time = time.time()
 
-inputs = keras.Input(shape=(None,), dtype="int64")
-forward_x = PosEmbedding(seq_len, vocab_size, embed_dim)(inputs)
-forward_x = TDecoder(embed_dim, dense_dim, multi_head_num)(forward_x, forward_x)
-outputs = layers.Dense(vocab_size, activation="softmax")(forward_x)
+inputs = keras.Input(shape=(None,),
+                     dtype="int64")
+forward_x = PosEmbedding(seq_len,
+                         vocab_size,
+                         embed_dim)(inputs)
+forward_x = TDecoder(embed_dim,
+                     dense_dim,
+                     multi_head_num)(forward_x, forward_x)
+outputs = layers.Dense(vocab_size,
+                       activation="softmax")(forward_x)
 
 print("cost(.01) is " + str(time.time() - start_time))
 start_time = time.time()
 
-gtr = keras.Model(inputs, outputs)
-gtr.compile(optimizer=conf_optimizer,
-            loss="sparse_categorical_crossentropy",
-            metrics=["accuracy", ])
+gt_model = keras.Model(inputs, outputs)
+gt_model.compile(optimizer=conf_optimizer,
+                 loss="sparse_categorical_crossentropy",
+                 metrics=["accuracy", ])
 
 print("cost(.02) is " + str(time.time() - start_time))
 start_time = time.time()
 
-dataset = keras.utils.text_dataset_from_directory(
-    directory=text_file,
-    label_mode=None,
-    batch_size=conf_batch_size
-)
+# dataset = keras.utils.text_dataset_from_directory(
+#     directory=text_file,
+#     labels=None,
+#     label_mode=None,
+#     batch_size=conf_batch_size
+# )
+
+with open(text_file, encoding='UTF-8') as txt_file:
+    datalines = txt_file.read().split('\n')
+txt_file.close()
+
+datalines = list(filter(None, datalines))
+print(' --- File been read lines ', len(datalines))
+
+
+def get_as_dataset(dls):
+    ds = tf.data.Dataset.from_tensor_slices(dls)
+    ds = ds.batch(conf_batch_size)
+    return ds.shuffle(2048).prefetch(16).cache()
+
+
+dataset = get_as_dataset(datalines)
 
 text_vectorization = layers.TextVectorization(
     max_tokens=vocab_size,
@@ -248,17 +271,17 @@ class TextGenerator(callbacks.Callback):
             print(sentence)
 
 
-prompt = "you are staying the whole evening"
+prompt = "we should"
 
 text_gen_callback = TextGenerator(
     prompt,
     gen_len=30,
     model_input_len=seq_len,
     temperatures=(0.1, 0.3, 0.5, 0.7, 1.,),
-    print_freq=20,
+    print_freq=2,
 )
 
 print("cost(.03) is " + str(time.time() - start_time))
 start_time = time.time()
 
-gtr.fit(decoder_dataset, epochs=conf_epoch, callbacks=[text_gen_callback])
+gt_model.fit(decoder_dataset, epochs=conf_epoch, callbacks=[text_gen_callback])

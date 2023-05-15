@@ -2,6 +2,7 @@ import random
 import re
 
 corpora_in = 'C:/Dev/ds/war_peace_plain_in.txt'
+prep_direct_out = 'C:/Dev/ds/wp_prep_d_01.txt'
 prep_out = 'C:/Dev/ds/wp_prep_01.txt'
 prep_train = 'C:/Dev/ds/wp_prep_01_train.txt'
 prep_valid = 'C:/Dev/ds/wp_prep_01_valid.txt'
@@ -17,6 +18,11 @@ window_size_fix = 6
 
 def txt_filter(s):
     return (not s.startswith('CHAPTER')) and (s != '') and (s is not None)
+
+
+def valid_length(s):
+    terms = s.split()
+    return len(terms) > 5
 
 
 def clean_sentence(s):
@@ -47,6 +53,13 @@ lines = list(filter(None, lines))
 
 for i in range(len(lines)):
     lines[i] = clean_sentence(lines[i])
+
+lines = list(filter(valid_length, lines))
+
+d_out_file = open(prep_direct_out, 'w')
+for line in lines:
+    d_out_file.write(line + '\n')
+d_out_file.close()
 
 seqs = []
 for line in lines:
