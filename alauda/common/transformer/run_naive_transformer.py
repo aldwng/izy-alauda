@@ -3,12 +3,12 @@ from keras import layers
 from tensorflow import keras
 import time
 
-from src.alauda.common.const import prep_train, prep_valid, prep_test, seq_len, embed_dim, vocab_size, dense_dim, \
+from alauda.common.const import prep_train, prep_valid, prep_test, seq_len, embed_dim, vocab_size, dense_dim, \
     multi_head_num, batch_size, conf_epoch
-from src.alauda.common.transformer.naive_decoder import NaiveTransformerDecoder
-from src.alauda.common.transformer.naive_encoder import NaiveTransformerEncoder
-from src.alauda.common.transformer.pos_embed import PosEmbedding
-from src.alauda.common.utils import get_as_pair
+from alauda.common.transformer.naive_decoder import NaiveTransformerDecoder
+from alauda.common.transformer.naive_encoder import NaiveTransformerEncoder
+from alauda.common.transformer.pos_embed import PosEmbedding
+from alauda.common.utils import get_as_pair
 
 start_time = time.time()
 

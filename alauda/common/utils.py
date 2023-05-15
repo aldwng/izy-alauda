@@ -1,8 +1,3 @@
-import tensorflow as tf
-
-from src.alauda.common.const import batch_size
-
-
 def get_as_pair(l):
     p1, p2 = l.split('\t')
     return p1, p2
