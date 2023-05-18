@@ -42,7 +42,6 @@ output(transformer output): lyric lines with the first word masked
 |'glass eyes'|'glass eyes mirror folks hatch film evidence scene freeze word glue stupid punk pleasure stupid know stupid know stupid know stupid know stupid know story story'|
 |'identity kit'|'identity kit pride sin eye time mean astray blind victim simple inside blue wrong wolves wrong gain sleep clue wrong pain find wrong kind find blind hard'|
 |'the number'|'the number feelin live cool life want little yeah tough yeah trippin afraid learn guitars sing start guitar know fade gotta hard cover sing feelin perfection like'|
-|'present tense'|'present tense ruin protect steam good powder sleep nervous cold arm rain angels warm cast cold fuel soul complain cold eye livin rain flow deal hair rain
-+ prompt:  tailor soldier sailor'|
+|'present tense'|'present tense ruin protect steam good powder sleep nervous cold arm rain angels warm cast cold fuel soul complain cold eye livin rain flow deal hair rain'|
 |'tailor soldier sailor'|'tailor soldier sailor cars rhythm glow eye rack watch beat roll lips wine home bone tell change mind close eye certain sell head  cry texas'|
 |'true love'|'true love things baby gonna share love cause forever sayin turn true go ordinary true true true things true true true true guitar blue play stay someday'|
