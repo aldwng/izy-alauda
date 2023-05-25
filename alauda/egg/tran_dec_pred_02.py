@@ -5,7 +5,7 @@ import numpy as np
 import pandas as pd
 import tensorflow as tf
 from keras import layers
-from keras.metrics import SparseCategoricalAccuracy, SparseTopKCategoricalAccuracy
+from keras.metrics import SparseCategoricalAccuracy, SparseTopKCategoricalAccuracy, AUC
 from keras.optimizers import Adam
 from tensorflow import keras
 
@@ -13,9 +13,9 @@ __author__ = "Aldy"
 
 """ Here are hyper params. """
 
-train_file = 'C:/Dev/ds/lyrics/eng_lyrics_train_01.txt'
-valid_file = 'C:/Dev/ds/lyrics/eng_lyrics_valid_01.txt'
-test_file = 'C:/Dev/ds/lyrics/eng_lyrics_test_01.txt'
+train_file = 'C:/Dev/ds/lyrics/eng_lyrics_train_02.txt'
+valid_file = 'C:/Dev/ds/lyrics/eng_lyrics_valid_02.txt'
+test_file = 'C:/Dev/ds/lyrics/eng_lyrics_test_02.txt'
 
 pd_train = pd.read_csv(train_file)
 print(pd_train.shape)
@@ -36,19 +36,19 @@ print(' train pairs len ', len(pairs_train))
 print(' valid pairs len ', len(pairs_valid))
 print(' test pairs len ', len(pairs_test))
 
-conf_vocab_size = 30000
-conf_seq_len = 75
+conf_vocab_size = 20000
+conf_seq_len = 100
 
 conf_embed_dim = 64
 conf_dense_dim = 64
 conf_multi_head_num = 8
 
-conf_epoch = 20
-conf_batch_size = 32
+conf_epoch = 5
+conf_batch_size = 128
 conf_lr = 0.01
 conf_optimizer = Adam()
 conf_activation = 'gelu'
-conf_dropout = 0.3
+conf_dropout = 0.4
 
 conf_gen_len = 25
 conf_print_freq = 1
@@ -226,7 +226,7 @@ forward_x = layers.GlobalMaxPooling1D()(forward_x)
 #                              output_dim=num_classes + 1)(forward_x)
 forward_x = layers.Dropout(conf_dropout)(forward_x)
 
-outputs = layers.Dense(num_classes + 2,
+outputs = layers.Dense(num_classes,
                        activation="softmax")(forward_x)
 
 print("cost(.01) is " + str(time.time() - start_time))
@@ -235,7 +235,7 @@ start_time = time.time()
 gt_model = keras.Model(inputs, outputs)
 gt_model.compile(optimizer=conf_optimizer,
                  loss="sparse_categorical_crossentropy",
-                 metrics=[SparseCategoricalAccuracy(), SparseTopKCategoricalAccuracy(k=2)], )
+                 metrics=['accuracy'], )
 
 print("cost(.02) is " + str(time.time() - start_time))
 start_time = time.time()
@@ -256,16 +256,18 @@ train_texts = [p[0] for p in pairs_train]
 train_targets = [p[1] for p in pairs_train]
 
 text_vectorization.adapt(train_texts)
-target_vectorization.adapt(train_targets)
+# target_vectorization.adapt(train_targets)
 
 tokens_index = dict(enumerate(text_vectorization.get_vocabulary()))
-target_index = dict(enumerate(target_vectorization.get_vocabulary()))
-print(target_index)
+
+
+# target_index = dict(enumerate(target_vectorization.get_vocabulary()))
+# print(target_index)
 
 
 def format_dataset(src, tar):
     src = text_vectorization(src)
-    tar = target_vectorization(tar)
+    tar = tar - 1
     return src, tar
 
 
@@ -307,12 +309,9 @@ class TestCallback(keras.callbacks.Callback):
             print(' -- test with row lyric: ', pair[0])
             print(' -- test with row age: ', pair[1])
             tokenized_lyric = text_vectorization([pair[0]])
-            # print(' input lyric: ', tokenized_lyric)
             prediction = self.model(tokenized_lyric)
-            # print(' prediction: ', prediction)
             predicted_output = np.argmax(prediction)
-            predicted_target = target_index[predicted_output]
-            print(' -> predicted age: ', predicted_target)
+            print(' -> predicted age: ', (predicted_output))
 
 
 test_callback = TestCallback(
@@ -323,4 +322,5 @@ test_callback = TestCallback(
 gt_model.fit(train_dataset,
              epochs=conf_epoch,
              validation_data=valid_dataset,
-             callbacks=[test_callback])
+             # callbacks=[test_callback])
+             )
